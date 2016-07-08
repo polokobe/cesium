@@ -185,6 +185,10 @@ define([
         byteOffset += sizeOfUint32;
         var indicesByteLength = view.getUint32(byteOffset, true);
         byteOffset += sizeOfUint32;
+        var outlinePositionByteLength = view.getUint32(byteOffset, true);
+        byteOffset += sizeOfUint32;
+        var outlineIndicesByteLength = view.getUint32(byteOffset, true);
+        byteOffset += sizeOfUint32;
 
         if (positionByteLength === 0) {
             this.state = Cesium3DTileContentState.PROCESSING;
@@ -201,6 +205,11 @@ define([
         byteOffset += positionByteLength;
         var indices = new Uint32Array(arrayBuffer, byteOffset, indicesByteLength / sizeOfUint32);
         byteOffset += indicesByteLength;
+
+        var outlinePositions = new Float64Array(arrayBuffer, byteOffset, outlinePositionByteLength / sizeOfFloat64);
+        byteOffset += outlinePositionByteLength;
+        var outlineIndices = new Uint32Array(arrayBuffer, byteOffset, outlineIndicesByteLength / sizeOfUint32);
+        byteOffset += outlineIndicesByteLength;
         
         var x = view.getFloat64(byteOffset, true);
         byteOffset += sizeOfFloat64;
@@ -210,12 +219,23 @@ define([
         byteOffset += sizeOfFloat64;
         var r = view.getFloat64(byteOffset, true);
         byteOffset += sizeOfFloat64;
+
+        var boundingSphere = new BoundingSphere(new Cartesian3(x, y, z), r);
+
+        x = view.getFloat64(byteOffset, true);
+        byteOffset += sizeOfFloat64;
+        y = view.getFloat64(byteOffset, true);
+        byteOffset += sizeOfFloat64;
+        z = view.getFloat64(byteOffset, true);
+        byteOffset += sizeOfFloat64;
+        r = view.getFloat64(byteOffset, true);
+        byteOffset += sizeOfFloat64;
+
+        var outlineBoundingSphere = new BoundingSphere(new Cartesian3(x, y, z), r);
         
         var minHeight = view.getFloat64(byteOffset, true);
         byteOffset += sizeOfFloat64;
         var maxHeight = view.getFloat64(byteOffset, true);
-        
-        var boundingSphere = new BoundingSphere(new Cartesian3(x, y, z), r);
 
         var color = Color.fromRandom().withAlpha(0.5);
         var geometryInstance = new GeometryInstance({
@@ -236,8 +256,33 @@ define([
             }
         });
 
+        color = Color.fromRandom().withAlpha(0.5);
+        var outlineInstance = new GeometryInstance({
+            geometry : new Geometry({
+                attributes : {
+                    position : new GeometryAttribute({
+                        componentDatatype : ComponentDatatype.DOUBLE,
+                        componentsPerAttribute : 3,
+                        normalize : false,
+                        values : outlinePositions
+                    })
+                },
+                indices : outlineIndices,
+                boundingSphere : outlineBoundingSphere
+            }),
+            attributes: {
+                color: ColorGeometryInstanceAttribute.fromColor(color)
+            }
+        });
+
         this._primitives.push(new GroundPrimitive({
             geometryInstances : geometryInstance,
+            asynchronous : false,
+            _minimumHeight : minHeight !== Number.POSITIVE_INFINITY ? minHeight : undefined,
+            _maximumHeight : maxHeight !== Number.NEGATIVE_INFINITY ? maxHeight : undefined,
+            _precreated : true
+        }), new GroundPrimitive({
+            geometryInstances : outlineInstance,
             asynchronous : false,
             _minimumHeight : minHeight !== Number.POSITIVE_INFINITY ? minHeight : undefined,
             _maximumHeight : maxHeight !== Number.NEGATIVE_INFINITY ? maxHeight : undefined,
