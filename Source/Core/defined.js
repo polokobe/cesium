@@ -11,6 +11,7 @@
  *      doSomethingElse();
  * }
  */
+ // 判数变量是否定义，
 function defined(value) {
   return value !== undefined && value !== null;
 }

@@ -11,6 +11,7 @@
  * @example
  * param = Cesium.defaultValue(param, 'default');
  */
+ // 参数为空时，返回默认值
 function defaultValue(a, b) {
   if (a !== undefined && a !== null) {
     return a;

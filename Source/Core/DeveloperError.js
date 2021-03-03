@@ -18,6 +18,7 @@ import defined from "./defined.js";
  *
  * @see RuntimeError
  */
+ // 定义开发者报错，需要被继承
 function DeveloperError(message) {
   /**
    * 'DeveloperError' indicating that this exception was thrown due to a developer error.

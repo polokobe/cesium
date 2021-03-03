@@ -32,6 +32,7 @@ function returnTrue() {
  *
  * @see DeveloperError
  */
+ //销毁对象
 function destroyObject(object, message) {
   message = defaultValue(
     message,
