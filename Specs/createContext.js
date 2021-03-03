@@ -1,107 +1,38 @@
-/*global define*/
-define([
-        'Core/clone',
-        'Core/defaultValue',
-        'Core/defined',
-        'Core/PrimitiveType',
-        'Core/queryToObject',
-        'Renderer/Buffer',
-        'Renderer/BufferUsage',
-        'Renderer/ClearCommand',
-        'Renderer/Context',
-        'Renderer/DrawCommand',
-        'Renderer/ShaderProgram',
-        'Renderer/VertexArray',
-        'Specs/createCanvas',
-        'Specs/createFrameState',
-        'Specs/destroyCanvas'
-    ], function(
-        clone,
-        defaultValue,
-        defined,
-        PrimitiveType,
-        queryToObject,
-        Buffer,
-        BufferUsage,
-        ClearCommand,
-        Context,
-        DrawCommand,
-        ShaderProgram,
-        VertexArray,
-        createCanvas,
-        createFrameState,
-        destroyCanvas) {
-    'use strict';
+import { clone } from "../Source/Cesium.js";
+import { defaultValue } from "../Source/Cesium.js";
+import { Context } from "../Source/Cesium.js";
+import createCanvas from "./createCanvas.js";
+import createFrameState from "./createFrameState.js";
+import getWebGLStub from "./getWebGLStub.js";
 
-    function createContext(options, canvasWidth, canvasHeight) {
-        // clone options so we can change properties
-        options = clone(defaultValue(options, {}));
-        options.webgl = clone(defaultValue(options.webgl, {}));
-        options.webgl.alpha = defaultValue(options.webgl.alpha, true);
-        options.webgl.antialias = defaultValue(options.webgl.antialias, false);
+function createContext(options, canvasWidth, canvasHeight) {
+  // clone options so we can change properties
+  options = clone(defaultValue(options, {}));
+  options.webgl = clone(defaultValue(options.webgl, {}));
+  options.webgl.antialias = defaultValue(options.webgl.antialias, false);
+  if (!!window.webglStub) {
+    options.getWebGLStub = getWebGLStub;
+  }
 
+  var canvas = createCanvas(canvasWidth, canvasHeight);
+  var context = new Context(canvas, options);
 
-        var canvas = createCanvas(canvasWidth, canvasHeight);
-        var context = new Context(canvas, options);
+  if (!!window.webglValidation) {
+    context.validateShaderProgram = true;
+    context.validateFramebuffer = true;
+    context.logShaderCompilation = true;
+    context.throwOnWebGLError = true;
+  }
 
-        var parameters = queryToObject(window.location.search.substring(1));
-        if (defined(parameters.webglValidation)) {
-            context.validateShaderProgram = true;
-            context.validateFramebuffer = true;
-            context.logShaderCompilation = true;
-            context.throwOnWebGLError = true;
-        }
+  var us = context.uniformState;
+  us.update(createFrameState(context));
 
-        var us = context.uniformState;
-        us.update(createFrameState(context));
+  // Add function for test
+  context.destroyForSpecs = function () {
+    document.body.removeChild(context.canvas);
+    return context.destroy();
+  };
 
-        // Add function for test
-        context.destroyForSpecs = function() {
-            destroyCanvas(context.canvas);
-            return context.destroy();
-        };
-
-        context.verifyDrawForSpecs = function(fs, uniformMap, modelMatrix) {
-            var vs = 'attribute vec4 position; void main() { gl_PointSize = 1.0; gl_Position = position; }';
-
-            var sp = ShaderProgram.fromCache({
-                context : context,
-                vertexShaderSource : vs,
-                fragmentShaderSource : fs
-            });
-
-            var va = new VertexArray({
-                context : context,
-                attributes : [{
-                    index : sp.vertexAttributes.position.index,
-                    vertexBuffer : Buffer.createVertexBuffer({
-                        context : context,
-                        typedArray : new Float32Array([0, 0, 0, 1]),
-                        usage : BufferUsage.STATIC_DRAW
-                    }),
-                    componentsPerAttribute : 4
-                }]
-            });
-
-            ClearCommand.ALL.execute(context);
-            expect(context.readPixels()).toEqual([0, 0, 0, 0]);
-
-            var command = new DrawCommand({
-                primitiveType : PrimitiveType.POINTS,
-                shaderProgram : sp,
-                vertexArray : va,
-                uniformMap : uniformMap,
-                modelMatrix : modelMatrix
-            });
-            command.execute(context);
-            expect(context.readPixels()).toEqual([255, 255, 255, 255]);
-
-            sp = sp.destroy();
-            va = va.destroy();
-        };
-
-        return context;
-    }
-
-    return createContext;
-});
+  return context;
+}
+export default createContext;

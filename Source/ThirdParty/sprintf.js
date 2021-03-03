@@ -125,9 +125,6 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-/*global define*/
-define(function() {
-
 function sprintf () {
   // http://kevin.vanzonneveld.net
   // +   original by: Ash Searle (http://hexmen.com/blog/)
@@ -316,5 +313,4 @@ function sprintf () {
   return format.replace(regex, doFormat);
 }
 
-return sprintf;
-});
+export default sprintf;

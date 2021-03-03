@@ -1,8 +1,9 @@
 #ifdef QUANTIZATION_BITS12
-attribute vec4 compressed;
+attribute vec4 compressed0;
+attribute float compressed1;
 #else
 attribute vec4 position3DAndHeight;
-attribute vec3 textureCoordAndEncodedNormals;
+attribute vec4 textureCoordAndEncodedNormals;
 #endif
 
 uniform vec3 u_center3D;
@@ -17,14 +18,23 @@ uniform vec2 u_southMercatorYAndOneOverHeight;
 varying vec3 v_positionMC;
 varying vec3 v_positionEC;
 
-varying vec2 v_textureCoordinates;
+varying vec3 v_textureCoordinates;
 varying vec3 v_normalMC;
 varying vec3 v_normalEC;
 
-#ifdef FOG
+#ifdef APPLY_MATERIAL
+varying float v_slope;
+varying float v_aspect;
+varying float v_height;
+#endif
+
+#if defined(FOG) || defined(GROUND_ATMOSPHERE) || defined(UNDERGROUND_COLOR) || defined(TRANSLUCENT)
 varying float v_distance;
-varying vec3 v_mieColor;
-varying vec3 v_rayleighColor;
+#endif
+
+#if defined(FOG) || defined(GROUND_ATMOSPHERE)
+varying vec3 v_fogMieColor;
+varying vec3 v_fogRayleighColor;
 #endif
 
 // These functions are generated at runtime.
@@ -55,7 +65,7 @@ float get2DMercatorYPositionFraction(vec2 textureCoordinates)
         float currentLatitude = mix(southLatitude, northLatitude, textureCoordinates.y);
         currentLatitude = clamp(currentLatitude, -czm_webMercatorMaxLatitude, czm_webMercatorMaxLatitude);
         positionFraction = czm_latitudeToWebMercatorFraction(currentLatitude, southMercatorY, oneOverMercatorHeight);
-    }    
+    }
     return positionFraction;
 }
 
@@ -97,44 +107,93 @@ uniform vec2 u_minMaxHeight;
 uniform mat4 u_scaleAndBias;
 #endif
 
-void main() 
+void main()
 {
 #ifdef QUANTIZATION_BITS12
-    vec2 xy = czm_decompressTextureCoordinates(compressed.x);
-    vec2 zh = czm_decompressTextureCoordinates(compressed.y);
+    vec2 xy = czm_decompressTextureCoordinates(compressed0.x);
+    vec2 zh = czm_decompressTextureCoordinates(compressed0.y);
     vec3 position = vec3(xy, zh.x);
     float height = zh.y;
-    vec2 textureCoordinates = czm_decompressTextureCoordinates(compressed.z);
-    float encodedNormal = compressed.w;
+    vec2 textureCoordinates = czm_decompressTextureCoordinates(compressed0.z);
 
     height = height * (u_minMaxHeight.y - u_minMaxHeight.x) + u_minMaxHeight.x;
     position = (u_scaleAndBias * vec4(position, 1.0)).xyz;
+
+#if (defined(ENABLE_VERTEX_LIGHTING) || defined(GENERATE_POSITION_AND_NORMAL)) && defined(INCLUDE_WEB_MERCATOR_Y)
+    float webMercatorT = czm_decompressTextureCoordinates(compressed0.w).x;
+    float encodedNormal = compressed1;
+#elif defined(INCLUDE_WEB_MERCATOR_Y)
+    float webMercatorT = czm_decompressTextureCoordinates(compressed0.w).x;
+    float encodedNormal = 0.0;
+#elif defined(ENABLE_VERTEX_LIGHTING) || defined(GENERATE_POSITION_AND_NORMAL)
+    float webMercatorT = textureCoordinates.y;
+    float encodedNormal = compressed0.w;
 #else
+    float webMercatorT = textureCoordinates.y;
+    float encodedNormal = 0.0;
+#endif
+
+#else
+    // A single float per element
     vec3 position = position3DAndHeight.xyz;
     float height = position3DAndHeight.w;
     vec2 textureCoordinates = textureCoordAndEncodedNormals.xy;
+
+#if (defined(ENABLE_VERTEX_LIGHTING) || defined(GENERATE_POSITION_AND_NORMAL) || defined(APPLY_MATERIAL)) && defined(INCLUDE_WEB_MERCATOR_Y)
+    float webMercatorT = textureCoordAndEncodedNormals.z;
+    float encodedNormal = textureCoordAndEncodedNormals.w;
+#elif defined(ENABLE_VERTEX_LIGHTING) || defined(GENERATE_POSITION_AND_NORMAL) || defined(APPLY_MATERIAL)
+    float webMercatorT = textureCoordinates.y;
     float encodedNormal = textureCoordAndEncodedNormals.z;
+#elif defined(INCLUDE_WEB_MERCATOR_Y)
+    float webMercatorT = textureCoordAndEncodedNormals.z;
+    float encodedNormal = 0.0;
+#else
+    float webMercatorT = textureCoordinates.y;
+    float encodedNormal = 0.0;
+#endif
+
 #endif
 
     vec3 position3DWC = position + u_center3D;
     gl_Position = getPosition(position, height, textureCoordinates);
 
-    v_textureCoordinates = textureCoordinates;
+    v_textureCoordinates = vec3(textureCoordinates, webMercatorT);
 
-#if defined(ENABLE_VERTEX_LIGHTING) || defined(GENERATE_POSITION_AND_NORMAL)
+#if defined(ENABLE_VERTEX_LIGHTING) || defined(GENERATE_POSITION_AND_NORMAL) || defined(APPLY_MATERIAL)
     v_positionEC = (u_modifiedModelView * vec4(position, 1.0)).xyz;
-    v_positionMC = position3DWC;                                 // position in model coordinates
-    v_normalMC = czm_octDecode(encodedNormal);
+    v_positionMC = position3DWC;  // position in model coordinates
+    vec3 normalMC = czm_octDecode(encodedNormal);
+    v_normalMC = normalMC;
     v_normalEC = czm_normal3D * v_normalMC;
-#elif defined(SHOW_REFLECTIVE_OCEAN) || defined(ENABLE_DAYNIGHT_SHADING) || defined(GENERATE_POSITION)
+#elif defined(SHOW_REFLECTIVE_OCEAN) || defined(ENABLE_DAYNIGHT_SHADING) || defined(GENERATE_POSITION) || defined(HDR)
     v_positionEC = (u_modifiedModelView * vec4(position, 1.0)).xyz;
-    v_positionMC = position3DWC;                                 // position in model coordinates
+    v_positionMC = position3DWC;  // position in model coordinates
 #endif
-    
-#ifdef FOG
-    AtmosphereColor atmosColor = computeGroundAtmosphereFromSpace(position3DWC);
-    v_mieColor = atmosColor.mie;
-    v_rayleighColor = atmosColor.rayleigh;
+
+#if defined(FOG) || defined(GROUND_ATMOSPHERE)
+    AtmosphereColor atmosFogColor = computeGroundAtmosphereFromSpace(position3DWC, false, vec3(0.0));
+    v_fogMieColor = atmosFogColor.mie;
+    v_fogRayleighColor = atmosFogColor.rayleigh;
+#endif
+
+#if defined(FOG) || defined(GROUND_ATMOSPHERE) || defined(UNDERGROUND_COLOR) || defined(TRANSLUCENT)
     v_distance = length((czm_modelView3D * vec4(position3DWC, 1.0)).xyz);
+#endif
+
+#ifdef APPLY_MATERIAL
+    float northPoleZ = czm_ellipsoidRadii.z;
+    vec3 northPolePositionMC = vec3(0.0, 0.0, northPoleZ);
+    vec3 ellipsoidNormal = normalize(v_positionMC); // For a sphere this is correct, but not generally for an ellipsoid.
+    vec3 vectorEastMC = normalize(cross(northPolePositionMC - v_positionMC, ellipsoidNormal));
+    float dotProd = abs(dot(ellipsoidNormal, v_normalMC));
+    v_slope = acos(dotProd);
+    vec3 normalRejected = ellipsoidNormal * dotProd;
+    vec3 normalProjected = v_normalMC - normalRejected;
+    vec3 aspectVector = normalize(normalProjected);
+    v_aspect = acos(dot(aspectVector, vectorEastMC));
+    float determ = dot(cross(vectorEastMC, aspectVector), ellipsoidNormal);
+    v_aspect = czm_branchFreeTernary(determ < 0.0, 2.0 * czm_pi - v_aspect, v_aspect);
+    v_height = height;
 #endif
 }

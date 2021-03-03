@@ -22,8 +22,6 @@
  *   limitations under the License.
  *
  */
-/*global define*/
-define(function() {
 
 	/**
 	 * Constructs a URI object.
@@ -272,5 +270,4 @@ define(function() {
 		return result;
 	};
 
-return URI;
-});
+export default URI;

@@ -1,71 +1,66 @@
-/*global define*/
-define([
-        'Core/Cartesian2',
-        'Core/clone',
-        'Core/defaultValue',
-        'Core/defined',
-        'Core/queryToObject',
-        'Scene/Scene',
-        'Specs/createCanvas',
-        'Specs/destroyCanvas'
-    ], function(
-        Cartesian2,
-        clone,
-        defaultValue,
-        defined,
-        queryToObject,
-        Scene,
-        createCanvas,
-        destroyCanvas) {
-    'use strict';
+import { Cartesian2 } from "../Source/Cesium.js";
+import { clone } from "../Source/Cesium.js";
+import { defaultValue } from "../Source/Cesium.js";
+import { defined } from "../Source/Cesium.js";
+import { Scene } from "../Source/Cesium.js";
+import createCanvas from "./createCanvas.js";
+import getWebGLStub from "./getWebGLStub.js";
 
-    function createScene(options) {
-        options = defaultValue(options, {});
+function createScene(options) {
+  options = defaultValue(options, {});
 
-        // save the canvas so we don't try to clone an HTMLCanvasElement
-        var canvas = defined(options.canvas) ? options.canvas : createCanvas();
-        options.canvas = undefined;
+  // save the canvas so we don't try to clone an HTMLCanvasElement
+  var canvas = defined(options.canvas) ? options.canvas : createCanvas();
+  options.canvas = undefined;
 
-        options = clone(options, true);
+  options = clone(options, true);
 
-        options.canvas = canvas;
-        options.contextOptions = defaultValue(options.contextOptions, {});
+  options.canvas = canvas;
+  options.contextOptions = defaultValue(options.contextOptions, {});
 
-        var contextOptions = options.contextOptions;
-        contextOptions.webgl = defaultValue(contextOptions.webgl, {});
-        contextOptions.webgl.antialias = defaultValue(contextOptions.webgl.antialias, false);
+  var contextOptions = options.contextOptions;
+  contextOptions.webgl = defaultValue(contextOptions.webgl, {});
+  contextOptions.webgl.antialias = defaultValue(
+    contextOptions.webgl.antialias,
+    false
+  );
+  contextOptions.webgl.stencil = defaultValue(
+    contextOptions.webgl.stencil,
+    true
+  );
+  if (!!window.webglStub) {
+    contextOptions.getWebGLStub = getWebGLStub;
+  }
 
-        var scene = new Scene(options);
+  var scene = new Scene(options);
+  scene.highDynamicRange = false;
 
-        if (window.webglValidation) {
-            var context = scene.context;
-            context.validateShaderProgram = true;
-            context.validateFramebuffer = true;
-            context.logShaderCompilation = true;
-            context.throwOnWebGLError = true;
-        }
+  if (!!window.webglValidation) {
+    var context = scene.context;
+    context.validateShaderProgram = true;
+    context.validateFramebuffer = true;
+    context.logShaderCompilation = true;
+    context.throwOnWebGLError = true;
+  }
 
-        // Add functions for test
-        scene.destroyForSpecs = function() {
-            var canvas = scene.canvas;
-            scene.destroy();
-            destroyCanvas(canvas);
-        };
+  // Add functions for test
+  scene.destroyForSpecs = function () {
+    var canvas = this.canvas;
+    this.destroy();
+    document.body.removeChild(canvas);
+  };
 
-        scene.renderForSpecs = function(time) {
-            scene.initializeFrame();
-            scene.render(time);
-            return scene.context.readPixels();
-        };
+  scene.renderForSpecs = function (time) {
+    this.initializeFrame();
+    this.render(time);
+  };
 
-        scene.pickForSpecs = function() {
-            return scene.pick(new Cartesian2(0, 0));
-        };
+  scene.pickForSpecs = function () {
+    this.pick(new Cartesian2(0, 0));
+  };
 
-        scene.rethrowRenderErrors = defaultValue(options.rethrowRenderErrors, true);
+  scene.rethrowRenderErrors = defaultValue(options.rethrowRenderErrors, true);
 
-        return scene;
-    }
-
-    return createScene;
-});
+  return scene;
+}
+export default createScene;
