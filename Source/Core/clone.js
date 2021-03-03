@@ -9,6 +9,8 @@ import defaultValue from "./defaultValue.js";
  * @param {Boolean} [deep=false] If true, all properties will be deep cloned recursively.
  * @returns {Object} The cloned object.
  */
+ // 对象的深拷贝
+ // 但是没有我写得简洁
 function clone(object, deep) {
   if (object === null || typeof object !== "object") {
     return object;

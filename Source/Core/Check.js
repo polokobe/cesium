@@ -6,6 +6,8 @@ import DeveloperError from "./DeveloperError.js";
  * or meet specified conditions
  * @private
  */
+ //做一些类型的判断，包括数值的大小判断
+ // 但是我觉得好无聊
 var Check = {};
 
 /**

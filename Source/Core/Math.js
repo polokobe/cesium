@@ -165,6 +165,7 @@ CesiumMath.EPSILON21 = 0.000000000000000000001;
  * @type {Number}
  * @constant
  */
+ // 万有引力常数
 CesiumMath.GRAVITATIONALPARAMETER = 3.986004418e14;
 
 /**
@@ -172,6 +173,7 @@ CesiumMath.GRAVITATIONALPARAMETER = 3.986004418e14;
  * @type {Number}
  * @constant
  */
+ // 太阳半径
 CesiumMath.SOLAR_RADIUS = 6.955e8;
 
 /**
@@ -181,6 +183,7 @@ CesiumMath.SOLAR_RADIUS = 6.955e8;
  * @type {Number}
  * @constant
  */
+ // 月球半径
 CesiumMath.LUNAR_RADIUS = 1737400.0;
 
 /**
