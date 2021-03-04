@@ -16,7 +16,8 @@ import CesiumMath from "./Math.js";
  * @see Cartesian2
  * @see Cartesian4
  * @see Packable
- */
+ */ 
+// 三维点 或 矢量
 function Cartesian3(x, y, z) {
   /**
    * The X component.

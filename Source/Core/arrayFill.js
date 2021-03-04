@@ -13,6 +13,8 @@ import defined from "./defined.js";
  * @returns {Array} The resulting array.
  * @private
  */
+ // 数组填充，简单
+ 
 function arrayFill(array, value, start, end) {
   //>>includeStart('debug', pragmas.debug);
   Check.defined("array", array);
