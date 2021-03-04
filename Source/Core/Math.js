@@ -191,6 +191,7 @@ CesiumMath.LUNAR_RADIUS = 1737400.0;
  * @type {Number}
  * @constant
  */
+// 64 KB
 CesiumMath.SIXTY_FOUR_KILOBYTES = 64 * 1024;
 
 /**
@@ -198,6 +199,7 @@ CesiumMath.SIXTY_FOUR_KILOBYTES = 64 * 1024;
  * @type {Number}
  * @constant
  */
+// 4 GB
 CesiumMath.FOUR_GIGABYTES = 4 * 1024 * 1024 * 1024;
 
 /**
@@ -209,6 +211,7 @@ CesiumMath.FOUR_GIGABYTES = 4 * 1024 * 1024 * 1024;
  * @returns {Number} The sign of value.
  */
 // eslint-disable-next-line es/no-math-sign
+// 判断函数正负性
 CesiumMath.sign = defaultValue(Math.sign, function sign(value) {
   value = +value; // coerce to number
   if (value === 0 || value !== value) {
@@ -225,6 +228,7 @@ CesiumMath.sign = defaultValue(Math.sign, function sign(value) {
  * @param {Number} value The value to return the sign of.
  * @returns {Number} The sign of value.
  */
+// 判断非负 和 sign 类似
 CesiumMath.signNotZero = function (value) {
   return value < 0.0 ? -1.0 : 1.0;
 };
@@ -237,6 +241,7 @@ CesiumMath.signNotZero = function (value) {
  *
  * @see CesiumMath.fromSNorm
  */
+// 将[-1, 1]的值拉伸到[0, range]
 CesiumMath.toSNorm = function (value, rangeMaximum) {
   rangeMaximum = defaultValue(rangeMaximum, 255);
   return Math.round(
@@ -252,6 +257,7 @@ CesiumMath.toSNorm = function (value, rangeMaximum) {
  *
  * @see CesiumMath.toSNorm
  */
+// 和 toSNorm 相反
 CesiumMath.fromSNorm = function (value, rangeMaximum) {
   rangeMaximum = defaultValue(rangeMaximum, 255);
   return (
@@ -266,6 +272,7 @@ CesiumMath.fromSNorm = function (value, rangeMaximum) {
  * @param {Number} rangeMaximum The maximum value in the mapped range.
  * @returns {Number} A scalar value, where rangeMinimum maps to 0.0 and rangeMaximum maps to 1.0.
  */
+// 将在[min, max]的数值，归一化
 CesiumMath.normalize = function (value, rangeMinimum, rangeMaximum) {
   rangeMaximum = Math.max(rangeMaximum - rangeMinimum, 0.0);
   return rangeMaximum === 0.0
@@ -296,6 +303,7 @@ CesiumMath.normalize = function (value, rangeMinimum, rangeMaximum) {
  * @returns {Number} The hyperbolic sine of <code>value</code>.
  */
 // eslint-disable-next-line es/no-math-sinh
+// 双曲正弦值
 CesiumMath.sinh = defaultValue(Math.sinh, function sinh(value) {
   return (Math.exp(value) - Math.exp(-value)) / 2.0;
 });
@@ -321,6 +329,7 @@ CesiumMath.sinh = defaultValue(Math.sinh, function sinh(value) {
  * @returns {Number} The hyperbolic cosine of <code>value</code>.
  */
 // eslint-disable-next-line es/no-math-cosh
+// 双曲余弦值
 CesiumMath.cosh = defaultValue(Math.cosh, function cosh(value) {
   return (Math.exp(value) + Math.exp(-value)) / 2.0;
 });
@@ -336,6 +345,7 @@ CesiumMath.cosh = defaultValue(Math.cosh, function cosh(value) {
  * @example
  * var n = Cesium.Math.lerp(0.0, 2.0, 0.5); // returns 1.0
  */
+// 线性插值
 CesiumMath.lerp = function (p, q, time) {
   return (1.0 - time) * p + time * q;
 };
@@ -441,6 +451,7 @@ CesiumMath.RADIANS_PER_ARCSECOND = CesiumMath.RADIANS_PER_DEGREE / 3600.0;
  * @param {Number} degrees The angle to convert in degrees.
  * @returns {Number} The corresponding angle in radians.
  */
+// 角度转弧度
 CesiumMath.toRadians = function (degrees) {
   //>>includeStart('debug', pragmas.debug);
   if (!defined(degrees)) {
@@ -455,6 +466,7 @@ CesiumMath.toRadians = function (degrees) {
  * @param {Number} radians The angle to convert in radians.
  * @returns {Number} The corresponding angle in degrees.
  */
+// 弧度转角度
 CesiumMath.toDegrees = function (radians) {
   //>>includeStart('debug', pragmas.debug);
   if (!defined(radians)) {
@@ -474,6 +486,7 @@ CesiumMath.toDegrees = function (radians) {
  * // Convert 270 degrees to -90 degrees longitude
  * var longitude = Cesium.Math.convertLongitudeRange(Cesium.Math.toRadians(270.0));
  */
+// 将 经度 转到 [-180, 180]之间
 CesiumMath.convertLongitudeRange = function (angle) {
   //>>includeStart('debug', pragmas.debug);
   if (!defined(angle)) {
@@ -505,6 +518,7 @@ CesiumMath.convertLongitudeRange = function (angle) {
  * // Clamp 108 degrees latitude to 90 degrees latitude
  * var latitude = Cesium.Math.clampToLatitudeRange(Cesium.Math.toRadians(108.0));
  */
+// 纬度 缩放
 CesiumMath.clampToLatitudeRange = function (angle) {
   //>>includeStart('debug', pragmas.debug);
   if (!defined(angle)) {
@@ -525,6 +539,7 @@ CesiumMath.clampToLatitudeRange = function (angle) {
  * @param {Number} angle in radians
  * @returns {Number} The angle in the range [<code>-CesiumMath.PI</code>, <code>CesiumMath.PI</code>].
  */
+// 角度换到 -PI 到 PI
 CesiumMath.negativePiToPi = function (angle) {
   //>>includeStart('debug', pragmas.debug);
   if (!defined(angle)) {
@@ -545,6 +560,7 @@ CesiumMath.negativePiToPi = function (angle) {
  * @param {Number} angle in radians
  * @returns {Number} The angle in the range [0, <code>CesiumMath.TWO_PI</code>].
  */
+// 角度 转到 0 - 2PI
 CesiumMath.zeroToTwoPi = function (angle) {
   //>>includeStart('debug', pragmas.debug);
   if (!defined(angle)) {
@@ -573,6 +589,7 @@ CesiumMath.zeroToTwoPi = function (angle) {
  * @param {Number} n The divisor.
  * @returns {Number} The remainder.
  */
+// 取模
 CesiumMath.mod = function (m, n) {
   //>>includeStart('debug', pragmas.debug);
   if (!defined(m)) {
@@ -612,6 +629,8 @@ CesiumMath.mod = function (m, n) {
  * var c = Cesium.Math.equalsEpsilon(3699175.1634344, 3699175.2, Cesium.Math.EPSILON7); // true
  * var d = Cesium.Math.equalsEpsilon(3699175.1634344, 3699175.2, Cesium.Math.EPSILON9); // false
  */
+// 用于数值大小比较，一定精度下
+// 方法一般
 CesiumMath.equalsEpsilon = function (
   left,
   right,
@@ -647,6 +666,7 @@ CesiumMath.equalsEpsilon = function (
  *          <code>absoluteEpsilon<code>. <code>false</code> if <code>left</code> is greater or if the two
  *          values are nearly equal.
  */
+// 小于
 CesiumMath.lessThan = function (left, right, absoluteEpsilon) {
   //>>includeStart('debug', pragmas.debug);
   if (!defined(left)) {
@@ -672,6 +692,7 @@ CesiumMath.lessThan = function (left, right, absoluteEpsilon) {
  * @returns {Boolean} <code>true</code> if <code>left</code> is less than <code>right</code> or if the
  *          the values are nearly equal.
  */
+// 小于 或 等于
 CesiumMath.lessThanOrEquals = function (left, right, absoluteEpsilon) {
   //>>includeStart('debug', pragmas.debug);
   if (!defined(left)) {
@@ -698,6 +719,7 @@ CesiumMath.lessThanOrEquals = function (left, right, absoluteEpsilon) {
  *          <code>absoluteEpsilon<code>. <code>false</code> if <code>left</code> is less or if the two
  *          values are nearly equal.
  */
+// 大于
 CesiumMath.greaterThan = function (left, right, absoluteEpsilon) {
   //>>includeStart('debug', pragmas.debug);
   if (!defined(left)) {
@@ -723,6 +745,7 @@ CesiumMath.greaterThan = function (left, right, absoluteEpsilon) {
  * @returns {Boolean} <code>true</code> if <code>left</code> is greater than <code>right</code> or if the
  *          the values are nearly equal.
  */
+// 大于 或 等于
 CesiumMath.greaterThanOrEquals = function (left, right, absoluteEpsilon) {
   //>>includeStart('debug', pragmas.debug);
   if (!defined(left)) {
@@ -755,6 +778,7 @@ var factorials = [1];
  *
  * @see {@link http://en.wikipedia.org/wiki/Factorial|Factorial on Wikipedia}
  */
+// 阶乘
 CesiumMath.factorial = function (n) {
   //>>includeStart('debug', pragmas.debug);
   if (typeof n !== "number" || n < 0) {
@@ -790,6 +814,9 @@ CesiumMath.factorial = function (n) {
  * var n = Cesium.Math.incrementWrap(5, 10, 0); // returns 6
  * var n = Cesium.Math.incrementWrap(10, 10, 0); // returns 0
  */
+// 增值，数值增加1
+// 如果增加后的值比最大值大的话，则设为最小值
+// wrapping
 CesiumMath.incrementWrap = function (n, maximumValue, minimumValue) {
   minimumValue = defaultValue(minimumValue, 0.0);
 
@@ -822,6 +849,7 @@ CesiumMath.incrementWrap = function (n, maximumValue, minimumValue) {
  * var t = Cesium.Math.isPowerOfTwo(16); // true
  * var f = Cesium.Math.isPowerOfTwo(20); // false
  */
+// 是不是2的次方数
 CesiumMath.isPowerOfTwo = function (n) {
   //>>includeStart('debug', pragmas.debug);
   if (typeof n !== "number" || n < 0 || n > 4294967295) {
@@ -845,6 +873,7 @@ CesiumMath.isPowerOfTwo = function (n) {
  * var n = Cesium.Math.nextPowerOfTwo(29); // 32
  * var m = Cesium.Math.nextPowerOfTwo(32); // 32
  */
+// 下一个 2 的幂数
 CesiumMath.nextPowerOfTwo = function (n) {
   //>>includeStart('debug', pragmas.debug);
   if (typeof n !== "number" || n < 0 || n > 2147483648) {
@@ -877,6 +906,7 @@ CesiumMath.nextPowerOfTwo = function (n) {
  * var n = Cesium.Math.previousPowerOfTwo(29); // 16
  * var m = Cesium.Math.previousPowerOfTwo(32); // 32
  */
+// 上一个 2 的幂数
 CesiumMath.previousPowerOfTwo = function (n) {
   //>>includeStart('debug', pragmas.debug);
   if (typeof n !== "number" || n < 0 || n > 4294967295) {
@@ -905,6 +935,7 @@ CesiumMath.previousPowerOfTwo = function (n) {
  * @param {Number} max The maximum value.
  * @returns {Number} The value clamped so that min <= value <= max.
  */
+// 夹断函数
 CesiumMath.clamp = function (value, min, max) {
   //>>includeStart('debug', pragmas.debug);
   if (!defined(value)) {
@@ -928,6 +959,7 @@ var randomNumberGenerator = new MersenneTwister();
  *
  * @param {Number} seed An integer used as the seed.
  */
+// 设置随机种子
 CesiumMath.setRandomNumberSeed = function (seed) {
   //>>includeStart('debug', pragmas.debug);
   if (!defined(seed)) {
@@ -958,6 +990,7 @@ CesiumMath.nextRandomNumber = function () {
  * @param {Number} max The maximum value.
  * @returns {Number} A random number between the min and max.
  */
+// 在 min max 之间随机
 CesiumMath.randomBetween = function (min, max) {
   return CesiumMath.nextRandomNumber() * (max - min) + min;
 };
@@ -970,6 +1003,7 @@ CesiumMath.randomBetween = function (min, max) {
  * @returns {Number} The acos of the value if the value is in the range [-1.0, 1.0], or the acos of -1.0 or 1.0,
  *          whichever is closer, if the value is outside the range.
  */
+// 夹断函数 套了个 余弦函数
 CesiumMath.acosClamped = function (value) {
   //>>includeStart('debug', pragmas.debug);
   if (!defined(value)) {
@@ -987,6 +1021,7 @@ CesiumMath.acosClamped = function (value) {
  * @returns {Number} The asin of the value if the value is in the range [-1.0, 1.0], or the asin of -1.0 or 1.0,
  *          whichever is closer, if the value is outside the range.
  */
+// 夹断函数 套了个 正弦函数
 CesiumMath.asinClamped = function (value) {
   //>>includeStart('debug', pragmas.debug);
   if (!defined(value)) {
@@ -1003,6 +1038,7 @@ CesiumMath.asinClamped = function (value) {
  * @param {Number} radius The radius of the circle.
  * @returns {Number} The chord length.
  */
+// 根据提供的角度和半径，计算弦长
 CesiumMath.chordLength = function (angle, radius) {
   //>>includeStart('debug', pragmas.debug);
   if (!defined(angle)) {
@@ -1022,6 +1058,7 @@ CesiumMath.chordLength = function (angle, radius) {
  * @param {Number} base The base.
  * @returns {Number} The result.
  */
+// 根据 number base 求对数
 CesiumMath.logBase = function (number, base) {
   //>>includeStart('debug', pragmas.debug);
   if (!defined(number)) {
@@ -1043,6 +1080,7 @@ CesiumMath.logBase = function (number, base) {
  * @returns {Number} The result.
  */
 // eslint-disable-next-line es/no-math-cbrt
+// 求一个数的立方根
 CesiumMath.cbrt = defaultValue(Math.cbrt, function cbrt(number) {
   var result = Math.pow(Math.abs(number), 1.0 / 3.0);
   return number < 0.0 ? -result : result;
@@ -1056,6 +1094,7 @@ CesiumMath.cbrt = defaultValue(Math.cbrt, function cbrt(number) {
  * @returns {Number} The result.
  */
 // eslint-disable-next-line es/no-math-log2
+// log2
 CesiumMath.log2 = defaultValue(Math.log2, function log2(number) {
   return Math.log(number) * Math.LOG2E;
 });
@@ -1079,6 +1118,7 @@ CesiumMath.fog = function (distanceToCamera, density) {
  * @param {Number} x An input number in the range [-1, 1]
  * @returns {Number} An approximation of atan(x)
  */
+// 快速 近似 正切
 CesiumMath.fastApproximateAtan = function (x) {
   //>>includeStart('debug', pragmas.debug);
   Check.typeOf.number("x", x);
@@ -1096,6 +1136,7 @@ CesiumMath.fastApproximateAtan = function (x) {
  * @param {Number} y An input number that isn't zero if x is zero.
  * @returns {Number} An approximation of atan2(x, y)
  */
+// 快速 近似 反正切
 CesiumMath.fastApproximateAtan2 = function (x, y) {
   //>>includeStart('debug', pragmas.debug);
   Check.typeOf.number("x", x);
